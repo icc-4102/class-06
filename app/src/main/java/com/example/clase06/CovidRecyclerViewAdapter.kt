@@ -1,4 +1,4 @@
-package com.example.clase05
+package com.example.clase06
 
 import android.view.LayoutInflater
 import android.view.View
@@ -6,11 +6,11 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 
-class CovidRecyclerViewAdapter():
-        RecyclerView.Adapter<CovidRecyclerViewAdapter.CovidViewHolder>() {
+class CovidRecyclerViewAdapter(override val onClickListener: OnClickListener):
+        RecyclerView.Adapter<CovidRecyclerViewAdapter.CovidViewHolder>(),IAdapterView {
 
     var data = mutableListOf<CovidCase>()
-    lateinit var onClickListener: OnClickListener
+
 
     //Metodo donde crear el layout de la celda a ver
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CovidViewHolder {
@@ -32,10 +32,14 @@ class CovidRecyclerViewAdapter():
         return data.size
     }
     // Metodo donde agrega un item al recyclerView
-    fun addCase(case : CovidCase){
-        data.add(case)
+    override fun addItem(item: Any) {
+        if(item is CovidCase){
+            data.add(item)
+            notifyDataSetChanged()
+        }
         this.notifyDataSetChanged()
     }
+
 
     // Clase interna con la definición del ViewHolder
     inner class CovidViewHolder(private val view: View): RecyclerView.ViewHolder(view){
@@ -50,4 +54,5 @@ class CovidRecyclerViewAdapter():
 
         }
     }
+
 }

@@ -1,49 +1,63 @@
-package com.example.clase05
+package com.example.clase06
 
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.Button
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.google.gson.Gson
+
+
+val REQUEST_CODE = 200
 
 class MainActivity : AppCompatActivity(), OnClickListener {
 
-    lateinit var covidRecyclerView: RecyclerView
-    lateinit var adapter: CovidRecyclerViewAdapter
     lateinit var cases: Array<CovidCase>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        covidRecyclerView = findViewById(R.id.covid_recycler_view)
-        covidRecyclerView.layoutManager = LinearLayoutManager(this)
-        adapter = CovidRecyclerViewAdapter()
-        adapter.onClickListener = this
-        //Se designa el adaptador para la recyclerView
-        covidRecyclerView.adapter = adapter
+
+        val covidCasesFragment =
+            supportFragmentManager.findFragmentById(R.id.covid_cases_fragment) as CovidCasesFragment
+        val adapter  = CovidRecyclerViewAdapter(this)
+        covidCasesFragment.adapter = adapter
+        covidCasesFragment.recyclerView.adapter = adapter
+
         //Libreria externa para transformar un json a data class
         val gson = Gson()
-        cases = gson.fromJson(dataJson,Array<CovidCase>::class.java)
+        cases = gson.fromJson(dataJson, Array<CovidCase>::class.java)
 
         //Boton que agrega un caso al recycler view
         val addCaseButton = findViewById<Button>(R.id.add_case_button)
         addCaseButton.setOnClickListener {
-            adapter.addCase(cases[0])
+            covidCasesFragment.adapter.addItem(cases[0])
 //            // Metodo que lo ordena nuevamente, se utiliza para que no entregue el mismo siempre
             cases.shuffle()
         }
     }
 
     override fun onClickItem(item: Any) {
-        if(item is CovidCase){
+        if (item is CovidCase) {
             val intent = Intent(this, CovidCaseDetail::class.java)
             val case = item as CovidCase
             //Esta es la forma correcta de pasar data por el intent. Lo que se vio en clase puede ser dependiendo del tipo
-            intent.putExtra("covidCase",case)
-            this.startActivity(intent)
+            intent.putExtra("covidCase", case)
+            this.startActivityForResult(intent, REQUEST_CODE)
         }
     }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == 200) {
+            if (resultCode == 201 && data != null) {
+                data.apply{
+                    val string  = this.getStringExtra("DATA")
+                    println(string)
+                }
+            }
+        }
+
+    }
+
 
 }
